@@ -8,7 +8,7 @@ const tableRouter = {
   redirect: '/table/complex-table',
   name: 'Table',
   meta: {
-    title: 'Table',
+    title: '基本管理',
     icon: 'table'
   },
   children: [
@@ -33,8 +33,8 @@ const tableRouter = {
     {
       path: 'complex-table',
       component: () => import('@/views/table/complex-table'),
-      name: 'ComplexTable',
-      meta: { title: 'Complex Table' }
+      name: '展品管理',
+      meta: { title: '展品管理' }
     }
   ]
 }

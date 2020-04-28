@@ -1,12 +1,12 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.title" placeholder="展品名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.title" placeholder="展商名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.name" placeholder="展品名称" style="width: 200px;" class="filter-item" clearable @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.exhibitor" placeholder="展商名称" style="width: 200px;" clearable class="filter-item" @keyup.enter.native="handleFilter" />
       <el-select v-model="listQuery.label" placeholder="展品标签" clearable style="width: 120px" class="filter-item">
         <el-option v-for="item in exhibits_label" :key="item.name" :label="item.name" :value="item.name" />
       </el-select>
-      <el-select v-model="listQuery.status" placeholder="展品状态" clearable class="filter-item" style="width: 130px">
+      <el-select v-model="listQuery.status" placeholder="展品状态" class="filter-item" style="width: 130px">
         <el-option v-for="item in status" :key="item.value" :label="item.label" :value="item.value" />
       </el-select>
       <!--      <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">-->
@@ -98,29 +98,49 @@
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="Type" prop="type">
-          <el-select v-model="temp.type" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
+      <el-form ref="dataForm" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+        <el-form-item label="展品标签" prop="type">
+          <el-select v-model="temp.label" multiple class="filter-item" placeholder="可多选">
+            <el-option v-for="item in exhibits_label" :key="item.name" :label="item.name" :value="item.name" />
           </el-select>
         </el-form-item>
-        <el-form-item label="Date" prop="timestamp">
+        <el-form-item label="创建日期" prop="timestamp">
           <el-date-picker v-model="temp.timestamp" type="datetime" placeholder="Please pick a date" />
         </el-form-item>
-        <el-form-item label="Title" prop="title">
-          <el-input v-model="temp.title" />
+        <el-form-item label="展品名称" prop="title">
+          <el-input v-model="temp.name" placeholder="清香型兰花香铁观音"/>
         </el-form-item>
-        <el-form-item label="Status">
-          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />
+        <el-form-item label="状态">
+          <el-select v-model="temp.status" class="filter-item">
+            <el-option v-for="item in status" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="Imp">
-          <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="3" style="margin-top:8px;" />
+        <el-form-item label="展商">
+          <el-select v-model="temp.exhibitor" style="width:260px;" placeholder="可搜索" clearable class="filter-item" filterable>
+            <el-option v-for="item in exhibitors" :key="item._id" :label="item.name" :value="item._id" />
+          </el-select>
         </el-form-item>
-        <el-form-item label="Remark">
-          <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="Please input" />
+        <el-form-item label="现价" prop="title">
+          <el-input v-model="temp.sales_price" placeholder="141"/>
         </el-form-item>
+        <el-form-item label="原价" prop="title">
+          <el-input v-model="temp.original_price" placeholder="321" />
+        </el-form-item>
+<!--        <el-form-item label="Imp">-->
+<!--          <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="3" style="margin-top:8px;" />-->
+<!--        </el-form-item>-->
+        <el-form-item label="微店地址">
+          <el-input v-model="temp.wd_link" :autosize="{ minRows: 2, maxRows: 2}" type="textarea" placeholder="https://weidian.com/item.html?itemID=3517644784&spider_token=1eca" />
+        </el-form-item>
+        <el-upload
+          class="avatar-uploader"
+          action="https://jsonplaceholder.typicode.com/posts/"
+          :show-file-list="false"
+          :on-success="handleAvatarSuccess"
+          :before-upload="beforeAvatarUpload">
+          <img v-if="imageUrl" :src="imageUrl" class="avatar">
+          <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+        </el-upload>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
@@ -143,7 +163,38 @@
     </el-dialog>
   </div>
 </template>
+<style>
+  .el-dialog{
+    width: 600px;
+  }
+  .avatar-uploader{
+    margin-left:70px;
+  }
+  .avatar-uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .avatar-uploader .el-upload:hover {
+    border-color: #409EFF;
+  }
+  .avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    line-height: 178px;
+    text-align: center;
+  }
+  .avatar {
+    width: 178px;
+    height: 178px;
+    display: block;
+  }
 
+</style>
 <script>
 import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
 import waves from '@/directive/waves' // waves directive
@@ -182,9 +233,8 @@ export default {
   filters: {
     statusFilter(status) {
       const statusMap = {
-        published: 'success',
-        draft: 'info',
-        deleted: 'danger'
+        '正常': true,
+        '停用': false,
       }
       return statusMap[status]
     },
@@ -214,13 +264,17 @@ export default {
         type: undefined,
         sort: '+id',
 
+        exhibitor: '',
         label: null,
+        name: '',
         status: true
       },
+      imageUrl: '',
+
       importanceOptions: [1, 2, 3],
       calendarTypeOptions,
       sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
-      statusOptions: ['published', 'draft', 'deleted'],
+      statusOptions: [true,false],
       showReviewer: false,
       temp: {
         id: undefined,
@@ -229,13 +283,22 @@ export default {
         timestamp: new Date(),
         title: '',
         type: '',
-        status: 'published'
+        status: true,
+
+        exhibitor: '',
+        exhibitor_id: '',
+        image: '',
+        label: [],
+        name: '',
+        original_price: null,
+        sales_price: null,
+        wd_link: ''
       },
       dialogFormVisible: false,
       dialogStatus: '',
       textMap: {
-        update: 'Edit',
-        create: 'Create'
+        update: '编辑',
+        create: '新增'
       },
       dialogPvVisible: false,
       pvData: [],
@@ -255,7 +318,6 @@ export default {
   created() {
     this.getLables()
     this.getList()
-    this.getList2()
   },
   methods: {
     getLables() {
@@ -271,38 +333,73 @@ export default {
         .then(res => {
           this.exhibitor_label = res.data
         })
-    },
-    getList() {
-      this.listLoading = true
-      fetchList(this.listQuery).then(response => {
-        this.list = response.data.items
-        // this.total = response.data.total
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
-      })
-    },
-    getList2: async function() {
-      this.listLoading = true
-      db.collection('exhibits').where({
+      // 获取展商清单
+      db.collection('exhibitor').where({
         status: true
-      }).count()
+      })
+        .orderBy('sort','desc')
+        .field({
+          _id:true,
+          name:true
+        })
+        .get()
+        .then(res => {
+          console.log(res.data)
+          this.exhibitors = res.data
+        })
+    },
+    // getList() {
+    //   this.listLoading = true
+    //   fetchList(this.listQuery).then(response => {
+    //     this.list = response.data.items
+    //     // this.total = response.data.total
+    //
+    //     // Just to simulate the time of the request
+    //     setTimeout(() => {
+    //       this.listLoading = false
+    //     }, 1.5 * 1000)
+    //   })
+    // },
+    handleAvatarSuccess(res, file) {
+      this.imageUrl = URL.createObjectURL(file.raw);
+    },
+    beforeAvatarUpload(file) {
+      const isJPG = file.type === 'image/jpeg';
+      const isLt2M = file.size / 1024 / 1024 < 2;
+
+      if (!isJPG) {
+        this.$message.error('上传头像图片只能是 JPG 格式!');
+      }
+      if (!isLt2M) {
+        this.$message.error('上传头像图片大小不能超过 2MB!');
+      }
+      return isJPG && isLt2M;
+    },
+    getList: async function() {
+      this.listLoading = true
+      const data = {
+        status: this.listQuery.status,
+        exhibitor: this.listQuery.exhibitor.trim() ? new RegExp(this.listQuery.exhibitor.trim(), 'i') : _.neq(null),
+        name: this.listQuery.name.trim() ? new RegExp(this.listQuery.name.trim(), 'i') : _.neq(null),
+        label: this.listQuery.label ? _.elemMatch(_.eq(this.listQuery.label)) : _.neq(null)
+      }
+      console.log(data)
+      console.log('!!!')
+      db.collection('exhibits').where(data).count()
         .then(res => {
           console.log(res.total)
           this.total = res.total
         })
 
-      db.collection('exhibits').where({
-        status: true
-      }).skip(this.listQuery.limit * (this.listQuery.page - 1))
+      db.collection('exhibits').where(data).skip(this.listQuery.limit * (this.listQuery.page - 1))
         .limit(this.listQuery.limit)
         .get()
         .then(res => {
           this.exhibits = res.data
           console.log(res.data)
         })
+
+      this.listLoading = false
 
       // 云函数使用
       // app.callFunction({
@@ -354,8 +451,17 @@ export default {
         remark: '',
         timestamp: new Date(),
         title: '',
-        status: 'published',
-        type: ''
+        status: true,
+        type: '',
+
+        exhibitor: '',
+        exhibitor_id: '',
+        image: '',
+        label: [],
+        name: '',
+        original_price: null,
+        sales_price: null,
+        wd_link: ''
       }
     },
     handleCreate() {
