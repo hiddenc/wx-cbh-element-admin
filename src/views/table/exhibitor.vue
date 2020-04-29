@@ -1,12 +1,11 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.name" placeholder="展品名称" style="width: 200px;" class="filter-item" clearable @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.exhibitor" placeholder="展商名称" style="width: 200px;" clearable class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.label" placeholder="展品标签" clearable style="width: 120px" class="filter-item">
-        <el-option v-for="item in exhibits_label" :key="item.name" :label="item.name" :value="item.name" />
+      <el-input v-model="listQuery.name" placeholder="展商名称" style="width: 200px;" clearable class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-select v-model="listQuery.label" placeholder="展商标签" clearable style="width: 120px" class="filter-item">
+        <el-option v-for="item in exhibitor_label" :key="item.name" :label="item.name" :value="item.name" />
       </el-select>
-      <el-select v-model="listQuery.status" placeholder="展品状态" class="filter-item" style="width: 130px">
+      <el-select v-model="listQuery.status" placeholder="展商状态" class="filter-item" style="width: 130px">
         <el-option v-for="item in status" :key="item.value" :label="item.label" :value="item.value" />
       </el-select>
       <!--      <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">-->
@@ -23,14 +22,14 @@
     <el-table
       :key="tableKey"
       v-loading="listLoading"
-      :data="exhibits"
+      :data="exhibitor"
       border
       fit
       highlight-current-row
       style="width: 100%;"
       @sort-change="sortChange"
     >
-      <el-table-column label="Sort" prop="sort" sortable="custom" align="center" width="80" :class-name="getSortClass('sort')">
+      <el-table-column label="Sort" prop="sort" sortable="custom" align="center" width="70" :class-name="getSortClass('sort')">
         <template slot-scope="{row}">
           <span>{{ row.sort }}</span>
         </template>
@@ -40,14 +39,20 @@
       <!--          <span>{{ row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>-->
       <!--        </template>-->
       <!--      </el-table-column>-->
-      <el-table-column label="展品名称" min-width="360px" align="center">
+      <el-table-column label="展商名称" width="240px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="现价/原价" width="160px" align="center">
+      <el-table-column label="简介" min-width="360px" align="center">
         <template slot-scope="{row}">
-          <el-tag type="danger">{{ row.sales_price }}</el-tag> <span style="text-decoration:line-through;color:#ccc">{{ row.original_price }}</span>
+          <span
+            style="overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;"
+          >{{ row.intro }}</span>
         </template>
       </el-table-column>
       <!--      <el-table-column v-if="showReviewer" label="Reviewer" width="110px" align="center">-->
@@ -55,11 +60,11 @@
       <!--          <span style="color:red;">{{ row.reviewer }}</span>-->
       <!--        </template>-->
       <!--      </el-table-column>-->
-      <el-table-column label="展商" width="240px" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.exhibitor }}</span>
-        </template>
-      </el-table-column>
+      <!--      <el-table-column label="展商" width="240px" align="center">-->
+      <!--        <template slot-scope="{row}">-->
+      <!--          <span>{{ row.exhibitor }}</span>-->
+      <!--        </template>-->
+      <!--      </el-table-column>-->
       <!--      <el-table-column label="Readings" align="center" width="95">-->
       <!--        <template slot-scope="{row}">-->
       <!--          <span v-if="row.pageviews" class="link-type" @click="handleFetchPv(row.pageviews)">{{ row.pageviews }}</span>-->
@@ -73,14 +78,19 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="状态" class-name="status-col" width="100">
+      <el-table-column label="绑定用户" width="100px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.username }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="状态" class-name="status-col" width="80">
         <template slot-scope="{row}">
           <el-tag :type="row.status | statusFilter">
             {{ row.status ? '正常' : '停用' }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="160" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" width="80" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
           <el-button type="primary" size="mini" plain @click="handleUpdate(row)">
             编辑
@@ -105,12 +115,12 @@
         <el-form-item label="创建日期" prop="create_date">
           <el-date-picker v-model="temp.create_date" type="datetime" placeholder="Please pick a date" />
         </el-form-item>
-        <el-form-item label="展品标签" prop="type">
+        <el-form-item label="展商标签" prop="type">
           <el-select v-model="temp.label" multiple class="filter-item" placeholder="可多选">
-            <el-option v-for="item in exhibits_label" :key="item.name" :label="item.name" :value="item.name" />
+            <el-option v-for="item in exhibitor_label" :key="item.name" :label="item.name" :value="item.name" />
           </el-select>
         </el-form-item>
-        <el-form-item label="展品名称" prop="title">
+        <el-form-item label="展商名称" prop="title">
           <el-input v-model="temp.name" placeholder="清香型兰花香铁观音" />
         </el-form-item>
         <el-form-item label="状态">
@@ -118,22 +128,19 @@
             <el-option v-for="item in status" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="展商">
-          <el-select v-model="temp.exhibitor_id" style="width:260px;" placeholder="可搜索" clearable class="filter-item" filterable>
-            <el-option v-for="item in exhibitors" :key="item._id" :label="item.name" :value="item._id" />
+        <el-form-item label="介绍">
+          <el-input v-model="temp.intro" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="" />
+        </el-form-item>
+        <el-form-item label="热度">
+          <el-rate
+            v-model="temp.hot"
+            :colors="colors"
+          />
+        </el-form-item>
+        <el-form-item label="绑定用户">
+          <el-select v-model="temp.user_id" class="filter-item" placeholder="请选择">
+            <el-option v-for="item in users" :key="item._id" :label="item.nickname" :value="item._id" />
           </el-select>
-        </el-form-item>
-        <el-form-item label="现价" prop="title">
-          <el-input v-model="temp.sales_price" placeholder="141" />
-        </el-form-item>
-        <el-form-item label="原价" prop="title">
-          <el-input v-model="temp.original_price" placeholder="321" />
-        </el-form-item>
-        <!--        <el-form-item label="Imp">-->
-        <!--          <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="3" style="margin-top:8px;" />-->
-        <!--        </el-form-item>-->
-        <el-form-item label="微店地址">
-          <el-input v-model="temp.wd_link" :autosize="{ minRows: 2, maxRows: 2}" type="textarea" placeholder="https://weidian.com/item.html?itemID=3517644784&spider_token=1eca" />
         </el-form-item>
         <el-upload
           class="avatar-uploader"
@@ -250,6 +257,8 @@ export default {
   },
   data() {
     return {
+      colors: ['#99A9BF', '#F7BA2A', '#FF9900'],
+      users: [],
       tableKey: 0,
       list: null,
       total: 0,
@@ -292,14 +301,13 @@ export default {
         type: '',
         status: true,
 
-        exhibitor: '',
-        exhibitor_id: '',
+        hot: 5,
         image: '',
+        intro: '',
         label: [],
         name: '',
-        original_price: null,
-        sales_price: null,
-        wd_link: '',
+        user_id: '',
+        username: '',
         sort: this.total + 1
       },
       dialogFormVisible: false,
@@ -318,7 +326,7 @@ export default {
       downloadLoading: false,
 
       exhibitors: [],
-      exhibits: [],
+      exhibitor: [],
       exhibitor_label: [],
       exhibits_label: []
     }
@@ -326,32 +334,40 @@ export default {
   created() {
     this.getLables()
     this.getList()
+    this.getUsers()
   },
   methods: {
     // 提交
+    getUsers: function() {
+      db.collection('users')
+        .get()
+        .then(res => {
+          this.users = res.data
+          console.log(this.users)
+        })
+    },
     submitExhibits: async function() {
       this.addExhibits()
     },
-    // 新增展品
+    // 新增展商
     addExhibits: async function() {
       const data = {
-        exhibitor_id: this.temp.exhibitor_id,
-        exhibitor: LD.find(this.exhibitors, { '_id': this.temp.exhibitor_id }).name,
+        hot: this.temp.hot,
         image: this.temp.image,
+        intro: this.temp.intro,
         label: this.temp.label,
         name: this.temp.name.trim(),
-        original_price: parseInt(this.temp.original_price),
-        sales_price: parseInt(this.temp.sales_price),
         status: this.temp.status,
-        wd_link: this.temp.wd_link,
         create_date: this.temp.create_date,
-        sort: parseInt(this.temp.sort)
+        sort: parseInt(this.temp.sort),
+        user_id: this.temp.user_id,
+        username: this.temp.user_id ? LD.find(this.users, { '_id': this.temp.user_id }).nickname : this.temp.username
       }
       // console.log(data)
-      db.collection('exhibits')
+      db.collection('exhibitor')
         .add(data)
         .then(res => {
-          // console.log(res)
+          console.log(res)
           // 弹出窗口隐藏，temp 数据清空
           this.dialogFormVisible = false
           this.resetTemp()
@@ -364,24 +380,23 @@ export default {
           })
         })
     },
-    // 更新展品
+    // 更新展商
     updateExhibits: async function() {
       console.log(this.temp.image)
       const data = {
-        exhibitor_id: this.temp.exhibitor_id,
-        exhibitor: LD.find(this.exhibitors, { '_id': this.temp.exhibitor_id }).name,
+        hot: this.temp.hot,
         image: this.temp.image,
+        intro: this.temp.intro,
         label: this.temp.label,
         name: this.temp.name.trim(),
-        original_price: parseInt(this.temp.original_price),
-        sales_price: parseInt(this.temp.sales_price),
         status: this.temp.status,
-        wd_link: this.temp.wd_link,
-        create_date: this.temp.create_date ? this.temp.create_date : new Date(),
-        sort: parseInt(this.temp.sort)
+        create_date: this.temp.create_date,
+        sort: parseInt(this.temp.sort),
+        user_id: this.temp.user_id,
+        username: this.temp.user_id ? LD.find(this.users, { '_id': this.temp.user_id }).nickname : this.temp.username
       }
-      console.log(data)
-      db.collection('exhibits')
+      // console.log(data)
+      db.collection('exhibitor')
         .doc(this.temp._id)
         .update(data)
         .then(res => {
@@ -413,7 +428,7 @@ export default {
       var fileObj = param.file
       app.uploadFile({
         // 云端路径
-        cloudPath: 'images/exhibits/' + new Date().getTime() + fileObj.type.replace('image/', '.'),
+        cloudPath: 'images/exhibitor/' + new Date().getTime() + fileObj.type.replace('image/', '.'),
         // 需要上传的文件，File 类型
         filePath: param.file
       }).then(async(res) => {
@@ -431,11 +446,11 @@ export default {
     // 获取标签
     getLables() {
       // 获取展品标签列表
-      db.collection('exhibits_label')
-        .get()
-        .then(res => {
-          this.exhibits_label = res.data
-        })
+      // db.collection('exhibits_label')
+      //   .get()
+      //   .then(res => {
+      //     this.exhibits_label = res.data
+      //   })
       // 获取展商标签列表
       db.collection('exhibitor_label')
         .get()
@@ -444,19 +459,19 @@ export default {
           console.log(this.exhibitor_label)
         })
       // 获取展商清单
-      db.collection('exhibitor').where({
-        status: true
-      })
-        .orderBy('sort', 'desc')
-        .field({
-          _id: true,
-          name: true
-        })
-        .get()
-        .then(res => {
-          console.log(res.data)
-          this.exhibitors = res.data
-        })
+      // db.collection('exhibitor').where({
+      //   status: true
+      // })
+      //   .orderBy('sort', 'desc')
+      //   .field({
+      //     _id: true,
+      //     name: true
+      //   })
+      //   .get()
+      //   .then(res => {
+      //     console.log(res.data)
+      //     this.exhibitors = res.data
+      //   })
     },
     // 获取图片临时地址
     getTempUrl: async function(list) {
@@ -504,24 +519,25 @@ export default {
       this.listLoading = true
       const data = {
         status: this.listQuery.status,
-        exhibitor: this.listQuery.exhibitor.trim() ? new RegExp(this.listQuery.exhibitor.trim(), 'i') : _.neq(null),
         name: this.listQuery.name.trim() ? new RegExp(this.listQuery.name.trim(), 'i') : _.neq(null),
         label: this.listQuery.label ? _.elemMatch(_.eq(this.listQuery.label)) : _.neq(null)
       }
       console.log(data)
       console.log('!!!')
-      db.collection('exhibits').where(data).count()
+      // 获取展商总数
+      db.collection('exhibitor').where(data).count()
         .then(res => {
           console.log(res.total)
           this.total = res.total
         })
 
-      db.collection('exhibits').where(data).skip(this.listQuery.limit * (this.listQuery.page - 1))
+      // 获取展商列表
+      db.collection('exhibitor').where(data).skip(this.listQuery.limit * (this.listQuery.page - 1))
         .limit(this.listQuery.limit)
         .orderBy('sort', 'desc')
         .get()
         .then(res => {
-          this.exhibits = res.data
+          this.exhibitor = res.data
           console.log(res.data)
         })
 
@@ -539,7 +555,7 @@ export default {
       // })
       //   .then(res => {
       //     console.log(res.result)
-      //     this.exhibits = res.result
+      //     this.exhibitor = res.result
       //   })
       //   .catch(err => {
       //     console.log(err)

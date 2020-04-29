@@ -29,7 +29,10 @@ export default [
     url: '/vue-element-admin/user/login',
     type: 'post',
     response: config => {
+
       const { username } = config.body
+      const { password } = config.body
+
       const token = tokens[username]
 
       // mock error
@@ -40,10 +43,17 @@ export default [
         }
       }
 
-      return {
-        code: 20000,
-        data: token
+      if (password === 'NteRoSiNailT'){
+        return {
+          code: 20000,
+          data: token
+        }
+      } else {
+        return {
+          code: 40000
+        }
       }
+
     }
   },
 
