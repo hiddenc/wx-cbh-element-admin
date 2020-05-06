@@ -335,13 +335,14 @@ export default {
     // 新增展品
     addExhibits: async function() {
       const data = {
+        id: Math.floor(Math.random() * 1000) + '_' + this.total,
         exhibitor_id: this.temp.exhibitor_id,
         exhibitor: LD.find(this.exhibitors, { '_id': this.temp.exhibitor_id }).name,
         image: this.temp.image,
         label: this.temp.label,
         name: this.temp.name.trim(),
-        original_price: parseInt(this.temp.original_price),
-        sales_price: parseInt(this.temp.sales_price),
+        original_price: parseFloat(this.temp.original_price),
+        sales_price: parseFloat(this.temp.sales_price),
         status: this.temp.status,
         wd_link: this.temp.wd_link,
         create_date: this.temp.create_date,
@@ -373,14 +374,14 @@ export default {
         image: this.temp.image,
         label: this.temp.label,
         name: this.temp.name.trim(),
-        original_price: parseInt(this.temp.original_price),
-        sales_price: parseInt(this.temp.sales_price),
+        original_price: parseFloat(this.temp.original_price),
+        sales_price: parseFloat(this.temp.sales_price),
         status: this.temp.status,
         wd_link: this.temp.wd_link,
         create_date: this.temp.create_date ? this.temp.create_date : new Date(),
         sort: parseInt(this.temp.sort)
       }
-      console.log(data)
+      // console.log(data)
       db.collection('exhibits')
         .doc(this.temp._id)
         .update(data)

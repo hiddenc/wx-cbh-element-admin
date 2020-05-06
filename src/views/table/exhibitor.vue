@@ -352,6 +352,7 @@ export default {
     // 新增展商
     addExhibits: async function() {
       const data = {
+        id: Math.floor(Math.random() * 1000) + '_' + this.total,
         hot: this.temp.hot,
         image: this.temp.image,
         intro: this.temp.intro,
