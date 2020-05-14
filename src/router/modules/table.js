@@ -12,6 +12,12 @@ const tableRouter = {
     icon: 'table'
   },
   children: [
+    // {
+    //   path: 'introduction',
+    //   component: () => import('@/views/table/introduction'),
+    //   name: '首页介绍',
+    //   meta: { title: '首页介绍' }
+    // },
     {
       path: 'exhibitor',
       component: () => import('@/views/table/exhibitor'),
@@ -35,6 +41,12 @@ const tableRouter = {
       component: () => import('@/views/table/complex-table'),
       name: '展品管理',
       meta: { title: '展品管理' }
+    },
+    {
+      path: 'activities',
+      component: () => import('@/views/table/activities'),
+      name: '热门活动',
+      meta: { title: '热门活动' }
     }
   ]
 }
