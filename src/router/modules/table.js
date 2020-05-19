@@ -8,7 +8,7 @@ const tableRouter = {
   redirect: '/table/complex-table',
   name: 'Table',
   meta: {
-    title: '基本管理',
+    title: '内容管理',
     icon: 'table'
   },
   children: [
@@ -18,6 +18,12 @@ const tableRouter = {
     //   name: '首页介绍',
     //   meta: { title: '首页介绍' }
     // },
+    {
+      path: 'activities',
+      component: () => import('@/views/table/activities'),
+      name: '热门活动',
+      meta: { title: '热门活动' }
+    },
     {
       path: 'exhibitor',
       component: () => import('@/views/table/exhibitor'),
@@ -41,12 +47,6 @@ const tableRouter = {
       component: () => import('@/views/table/complex-table'),
       name: '展品管理',
       meta: { title: '展品管理' }
-    },
-    {
-      path: 'activities',
-      component: () => import('@/views/table/activities'),
-      name: '热门活动',
-      meta: { title: '热门活动' }
     }
   ]
 }
