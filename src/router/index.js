@@ -168,6 +168,15 @@ export const asyncRoutes = [
           title: '展品分类',
           roles: ['admin', 'editor']
         }
+      },
+      {
+        path: 'ms',
+        component: () => import('@/views/table/ms'),
+        name: '限时促销',
+        meta: {
+          title: '限时促销',
+          roles: ['admin', 'editor']
+        }
       }
     ]
   },
