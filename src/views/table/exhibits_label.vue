@@ -161,6 +161,7 @@ export default {
     this.getList()
   },
   methods: {
+    // 删除标签
     deleteLabel: function(row) {
       const that = this
       db.collection('exhibits_label')

@@ -42,7 +42,7 @@
       <!--      </el-table-column>-->
       <el-table-column label="展品名称" min-width="360px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.name }}</span>
+          <span class="link-type" @click="linkTo(row.wd_link)">{{ row.name }}</span>
         </template>
       </el-table-column>
       <el-table-column label="现价/原价" width="160px" align="center">
@@ -328,6 +328,10 @@ export default {
     this.getList()
   },
   methods: {
+    // 跳转
+    linkTo: function(wd_link) {
+      window.open(wd_link, '_blank').location
+    },
     // 提交
     submitExhibits: async function() {
       this.addExhibits()
